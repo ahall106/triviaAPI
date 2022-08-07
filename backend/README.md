@@ -71,11 +71,207 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
+
+`GET '/categories'`
+
+- Retrieves a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Request Arguments: None
+- Returns: An object with a single key, categories, that contains an object of id: category_string key:value pairs.
+
+```json
+{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  }
+}
+```
+
+---
+
+`GET '/questions?page=${integer}'`
+
+- Retrieves a paginated set of questions, a total number of questions, all categories and current category string.
+- Request Arguments: `page` - integer
+- Returns: An object with 10 paginated questions, total questions, object including all categories, and current category string
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does DNA stand for?",
+      "answer": "Deoxyribonucleic acid",
+      "difficulty": 5,
+      "category": 1
+    }
+  ],
+  "totalQuestions": 13,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": "Science"
+}
+```
+
+---
+
+`GET '/categories/${id}/questions'`
+
+- Retrieves questions for a cateogry specified by id request argument
+- Request Arguments: `id` - integer
+- Returns: An object with questions for the specified category, total questions, and current category string
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does DNA stand for?",
+      "answer": "Deoxyribonucleic acid",
+      "difficulty": 5,
+      "category": 1
+    }
+  ],
+  "totalQuestions": 13,
+  "currentCategory": "Science"
+}
+```
+
+---
+
+`DELETE '/questions/${id}'`
+
+- Deletes a specified question using the id of the question
+- Request Arguments: `id` - integer
+- Returns: An object with 10 paginated questions, total questions, object including all categories, and current category string
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does DNA stand for?",
+      "answer": "Deoxyribonucleic acid",
+      "difficulty": 5,
+      "category": 1
+    }
+  ],
+  "totalQuestions": 13,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": "Science"
+}
+```
+---
+
+`POST '/quizzes'`
+
+- Sends a post request in order to get the next question
+- Request Body:
+
+```json
+{
+    'previous_questions': [1, 4, 20, 15]
+    'quiz_category': {'id': 1, 'category': 'Science'}
+ }
+```
+
+- Returns: a single new question object
+
+```json
+{
+  "question": {
+    "id": 1,
+    "question": "What does DNA stand for?",
+    "answer": "Deoxyribonucleic acid",
+    "difficulty": 5,
+    "category": 1
+  }
+}
+```
+
+---
+
+`POST '/questions'`
+
+- Sends a post request in order to add a new question
+- Request Body:
+
+```json
+{
+  "question": "What does DNA stand for?",
+  "answer": "Deoxyribonucleic acid",
+  "difficulty": 5,
+  "category": 1
+}
+```
+
+- Returns: An object with 10 paginated questions and total questions
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does DNA stand for?",
+      "answer": "Deoxyribonucleic acid",
+      "difficulty": 5,
+      "category": 1
+    }
+  ],
+  "totalQuestions": 13,
+}
+```
+
+---
+
+`POST '/questions'`
+
+- Sends a post request in order to search for a specific question by search term
+- Request Body:
+
+```json
+{
+  "searchTerm": "DNA"
+}
+```
+
+- Returns: any array of questions, a number of totalQuestions that met the search term and the current category string
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does DNA stand for?",
+      "answer": "Deoxyribonucleic acid",
+      "difficulty": 5,
+      "category": 1
+    }
+  ],
+  "totalQuestions": 13,
+  "currentCategory": "Science"
+}
+```
 ### Documentation Example
 
 `GET '/api/v1.0/categories'`
 
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Retrieves a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
 

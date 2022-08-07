@@ -49,21 +49,17 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        try:
-            categories = Category.query.all()
+        categories = Category.query.all()
 
-            if len(categories) == 0:
-                abort(404)
+        if len(categories) == 0:
+            abort(404)
 
-            return jsonify(
-                {
-                    'success': True,
-                    'categories': {category.id : category.type for category in categories}
-                }
-            )
-
-        except:
-            abort(422)           
+        return jsonify(
+            {
+                'success': True,
+                'categories': {category.id : category.type for category in categories}
+            }
+        )         
 
     """
     @TODO:
@@ -78,27 +74,24 @@ def create_app(test_config=None):
     Clicking on the page numbers should update the questions.
     """
     @app.route('/questions')
-    def get_questions():
-        try:       
-            selection = Question.query.all()
-            current_questions = paginate_questions(request, selection)
+    def get_questions():   
+        selection = Question.query.all()
+        current_questions = paginate_questions(request, selection)
 
-            categories = Category.query.all()
+        categories = Category.query.all()
 
-            if len(current_questions) == 0:
-                abort(404)
+        if len(current_questions) == 0:
+            abort(404)
 
-            return jsonify(
-                {
-                    'success': True,
-                    'questions': current_questions,
-                    'total_questions': len(Question.query.all()),
-                    'categories': {category.id : category.type for category in categories},
-                    'current_category': None
-                }
-            )
-        except:
-            abort(422)  
+        return jsonify(
+            {
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(selection),
+                'categories': {category.id : category.type for category in categories},
+                'current_category': None
+            }
+        )
 
     """
     @TODO:
@@ -109,31 +102,27 @@ def create_app(test_config=None):
     """
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
-        try:
-            question = Question.query.filter(Question.id == question_id).one_or_none()
+        question = Question.query.filter(Question.id == question_id).one_or_none()
 
-            if question is None:
-                abort(404)
+        if question is None:
+            abort(404)
 
-            question.delete()
+        question.delete()
 
-            selection = Question.query.all()
-            current_questions = paginate_questions(request, selection)
+        selection = Question.query.all()
+        current_questions = paginate_questions(request, selection)
 
-            categories = Category.query.all()
+        categories = Category.query.all()
 
-            return jsonify(
-                {
-                    'success': True,
-                    'questions': current_questions,
-                    'total_questions': len(Question.query.all()),
-                    'categories': {category.id : category.type for category in categories},
-                    'current_category': None
-                }
-            )
-
-        except:
-            abort(422)
+        return jsonify(
+            {
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(selection),
+                'categories': {category.id : category.type for category in categories},
+                'current_category': None
+            }
+        )
 
     """
     @TODO:
@@ -173,7 +162,6 @@ def create_app(test_config=None):
                 )
 
             else:
-
                 question = Question(question=question_text, 
                                     answer=answer, 
                                     category=category, 
@@ -187,7 +175,7 @@ def create_app(test_config=None):
                     {
                         'success': True,
                         'questions': current_questions,
-                        'total_questions': len(Question.query.all())
+                        'total_questions': len(selection)
                     }
                 )
 
@@ -216,23 +204,20 @@ def create_app(test_config=None):
     """
     @app.route("/categories/<int:category_id>/questions")
     def get_questions_by_category(category_id):
-        try:
-            selection = Question.query.filter(Question.category == category_id).all()
-            current_questions = paginate_questions(request, selection)
+        selection = Question.query.filter(Question.category == category_id).all()
+        current_questions = paginate_questions(request, selection)
 
-            if len(current_questions) == 0:
-                abort(404)
+        if len(current_questions) == 0:
+            abort(404)
 
-            return jsonify(
-                {
-                    'success': True,
-                    'questions': current_questions,
-                    'current_category': category_id
-                }
-            )
-
-        except:
-            abort(422) 
+        return jsonify(
+            {
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(selection),                
+                'current_category': category_id
+            }
+        )
 
     """
     @TODO:
@@ -254,24 +239,20 @@ def create_app(test_config=None):
 
         category_id = category_dict['id']
 
-        try:
-            # Note that category_id is set to 0 for 'ALL'
-            questions = Question.query.all() if category_id == 0 else Question.query.filter(Question.category == category_id).all()
+        # Note that category_id is set to 0 for 'ALL'
+        questions = Question.query.all() if category_id == 0 else Question.query.filter(Question.category == category_id).all()
 
-            current_questions = [q for q in questions if q.id not in previous_questions_id_list]
+        current_questions = [q for q in questions if q.id not in previous_questions_id_list]
 
-            if len(current_questions) == 0:
-                abort(404)
+        if len(current_questions) == 0:
+            abort(404)
 
-            return jsonify(
-                {
-                    'success': True,
-                    'question': random.choice(current_questions).format()
-                }
-            )
-
-        except:
-            abort(422)
+        return jsonify(
+            {
+                'success': True,
+                'question': random.choice(current_questions).format()
+            }
+        )
 
     """
     @TODO:
