@@ -80,7 +80,7 @@ def create_app(test_config=None):
     @app.route('/questions')
     def get_questions():
         try:       
-            selection = Question.query.order_by(Question.id).all()
+            selection = Question.query.all()
             current_questions = paginate_questions(request, selection)
 
             categories = Category.query.all()
@@ -107,6 +107,33 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    @app.route("/questions/<int:question_id>", methods=["DELETE"])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(Question.id == question_id).one_or_none()
+
+            if question is None:
+                abort(404)
+
+            question.delete()
+
+            selection = Question.query.all()
+            current_questions = paginate_questions(request, selection)
+
+            categories = Category.query.all()
+
+            return jsonify(
+                {
+                    'success': True,
+                    'questions': current_questions,
+                    'total_questions': len(Question.query.all()),
+                    'categories': {category.id : category.type for category in categories},
+                    'current_category': None
+                }
+            )
+
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -118,6 +145,54 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route("/questions", methods=["POST"])
+    def create_question():
+        body = request.get_json()
+
+        question_text = body.get('question', None)
+        answer = body.get('answer', None)
+        category = body.get('category', None)
+        difficulty = body.get('difficulty', None)
+
+        search_term = body.get('searchTerm', None)
+
+        try:
+            if search_term:
+                selection = Question.query.filter(
+                    Question.question.ilike('%{}%'.format(search_term))
+                )
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify(
+                    {
+                        'success': True,
+                        'questions': current_questions,
+                        'total_questions': len(selection.all()),
+                        'current_category': None
+                    }
+                )
+
+            else:
+
+                question = Question(question=question_text, 
+                                    answer=answer, 
+                                    category=category, 
+                                    difficulty=difficulty)
+                question.insert()
+
+                selection = Question.query.all()
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify(
+                    {
+                        'success': True,
+                        'questions': current_questions,
+                        'total_questions': len(Question.query.all())
+                    }
+                )
+
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -129,6 +204,7 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
+    # See the endpoint to POST a question above
 
     """
     @TODO:
@@ -140,19 +216,23 @@ def create_app(test_config=None):
     """
     @app.route("/categories/<int:category_id>/questions")
     def get_questions_by_category(category_id):
-        selection = Question.query.filter(Question.category == category_id).all()
-        current_questions = paginate_questions(request, selection)
+        try:
+            selection = Question.query.filter(Question.category == category_id).all()
+            current_questions = paginate_questions(request, selection)
 
-        if len(current_questions) == 0:
-            abort(404)
+            if len(current_questions) == 0:
+                abort(404)
 
-        return jsonify(
-            {
-                'success': True,
-                'questions': current_questions,
-                'current_category': category_id
-            }
-        )
+            return jsonify(
+                {
+                    'success': True,
+                    'questions': current_questions,
+                    'current_category': category_id
+                }
+            )
+
+        except:
+            abort(422) 
 
     """
     @TODO:
@@ -165,6 +245,33 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
+    @app.route("/quizzes", methods=["POST"])
+    def get_next_question():
+        body = request.get_json()
+
+        previous_questions_id_list = body.get('previous_questions', [])
+        category_dict = body.get('quiz_category', None)
+
+        category_id = category_dict['id']
+
+        try:
+            # Note that category_id is set to 0 for 'ALL'
+            questions = Question.query.all() if category_id == 0 else Question.query.filter(Question.category == category_id).all()
+
+            current_questions = [q for q in questions if q.id not in previous_questions_id_list]
+
+            if len(current_questions) == 0:
+                abort(404)
+
+            return jsonify(
+                {
+                    'success': True,
+                    'question': random.choice(current_questions).format()
+                }
+            )
+
+        except:
+            abort(422)
 
     """
     @TODO:
