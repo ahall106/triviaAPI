@@ -8,6 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def paginate_questions(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -18,13 +19,15 @@ def paginate_questions(request, selection):
 
     return current_questions
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
 
     """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    @TODO: Set up CORS. Allow '*' for origins.
+    Delete the sample route after completing the TODOs
     """
     CORS(app, resources={r'*': {'origins': '*'}})
 
@@ -41,7 +44,6 @@ def create_app(test_config=None):
         )
         return response
 
-
     """
     @TODO:
     Create an endpoint to handle GET requests
@@ -54,12 +56,10 @@ def create_app(test_config=None):
         if len(categories) == 0:
             abort(404)
 
-        return jsonify(
-            {
-                'success': True,
-                'categories': {category.id : category.type for category in categories}
-            }
-        )         
+        return jsonify({
+            'success': True,
+            'categories': {c.id: c.type for c in categories}
+            })
 
     """
     @TODO:
@@ -70,11 +70,12 @@ def create_app(test_config=None):
 
     TEST: At this point, when you start the application
     you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
+    ten questions per page and pagination at the bottom of
+    the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
     @app.route('/questions')
-    def get_questions():   
+    def get_questions():
         selection = Question.query.all()
         current_questions = paginate_questions(request, selection)
 
@@ -88,7 +89,7 @@ def create_app(test_config=None):
                 'success': True,
                 'questions': current_questions,
                 'total_questions': len(selection),
-                'categories': {category.id : category.type for category in categories},
+                'categories': {c.id: c.type for c in categories},
                 'current_category': None
             }
         )
@@ -97,17 +98,18 @@ def create_app(test_config=None):
     @TODO:
     Create an endpoint to DELETE question using a question ID.
 
-    TEST: When you click the trash icon next to a question, the question will be removed.
+    TEST: When you click the trash icon next to a question,
+    the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
-        question = Question.query.filter(Question.id == question_id).one_or_none()
+        q = Question.query.filter(Question.id == question_id).one_or_none()
 
-        if question is None:
+        if q is None:
             abort(404)
 
-        question.delete()
+        q.delete()
 
         selection = Question.query.all()
         current_questions = paginate_questions(request, selection)
@@ -119,7 +121,7 @@ def create_app(test_config=None):
                 'success': True,
                 'questions': current_questions,
                 'total_questions': len(selection),
-                'categories': {category.id : category.type for category in categories},
+                'categories': {c.id: c.type for c in categories},
                 'current_category': None
             }
         )
@@ -131,8 +133,9 @@ def create_app(test_config=None):
     category, and difficulty score.
 
     TEST: When you submit a question on the "Add" tab,
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.
+    the form will clear and the question will appear
+    at the end of the last page of the questions list
+    in the "List" tab.
     """
     @app.route("/questions", methods=["POST"])
     def create_question():
@@ -162,9 +165,9 @@ def create_app(test_config=None):
                 )
 
             else:
-                question = Question(question=question_text, 
-                                    answer=answer, 
-                                    category=category, 
+                question = Question(question=question_text,
+                                    answer=answer,
+                                    category=category,
                                     difficulty=difficulty)
                 question.insert()
 
@@ -204,8 +207,8 @@ def create_app(test_config=None):
     """
     @app.route("/categories/<int:category_id>/questions")
     def get_questions_by_category(category_id):
-        selection = Question.query.filter(Question.category == category_id).all()
-        current_questions = paginate_questions(request, selection)
+        sel = Question.query.filter(Question.category == category_id).all()
+        current_questions = paginate_questions(request, sel)
 
         if len(current_questions) == 0:
             abort(404)
@@ -214,7 +217,7 @@ def create_app(test_config=None):
             {
                 'success': True,
                 'questions': current_questions,
-                'total_questions': len(selection),                
+                'total_questions': len(sel),
                 'current_category': category_id
             }
         )
@@ -240,17 +243,19 @@ def create_app(test_config=None):
         category_id = category_dict['id']
 
         # Note that category_id is set to 0 for 'ALL'
-        questions = Question.query.all() if category_id == 0 else Question.query.filter(Question.category == category_id).all()
+        questions = Question.query.all() if category_id == 0 \
+            else Question.query.filter(Question.category == category_id).all()
 
-        current_questions = [q for q in questions if q.id not in previous_questions_id_list]
+        current_questions = [q for q in questions
+                             if q.id not in previous_questions_id_list]
 
-        if len(current_questions) == 0:
-            abort(404)
+        question = (random.choice(current_questions).format()
+                    if len(current_questions) > 0 else None)
 
         return jsonify(
             {
                 'success': True,
-                'question': random.choice(current_questions).format()
+                'question': question
             }
         )
 
@@ -263,8 +268,8 @@ def create_app(test_config=None):
     def not_found(error):
         return (
             jsonify({
-                'success': False, 
-                'error': 404, 
+                'success': False,
+                'error': 404,
                 'message': 'resource not found'
             }),
             404
@@ -274,8 +279,8 @@ def create_app(test_config=None):
     def unprocessable(error):
         return (
             jsonify({
-                'success': False, 
-                'error': 422, 
+                'success': False,
+                'error': 422,
                 'message': 'unprocessable'
             }),
             422
@@ -285,23 +290,33 @@ def create_app(test_config=None):
     def bad_request(error):
         return (
             jsonify({
-                'success': False, 
-                'error': 400, 
+                'success': False,
+                'error': 400,
                 'message': 'bad request'
-            }), 
-            400 
+            }),
+            400
         )
 
     @app.errorhandler(405)
     def not_found(error):
         return (
             jsonify({
-                'success': False, 
-                'error': 405, 
+                'success': False,
+                'error': 405,
                 'message': 'method not allowed'
             }),
             405
         )
 
-    return app
+    @app.errorhandler(500)
+    def not_found(error):
+        return (
+            jsonify({
+                'success': False,
+                'error': 500,
+                'message': 'internal server error'
+            }),
+            500
+        )
 
+    return app
